@@ -173,6 +173,53 @@ compilar_executavel.bat
 - 📈 **CSV**: Dados estruturados para análise
 - 📧 **Email**: Envio automático para supervisores
 
+## 🔒 Segurança e Privacidade
+
+### **Sistema de Proteção Multicamadas**
+
+#### **🛡️ Variáveis de Ambiente**
+- Credenciais armazenadas em `.env` (não versionado)
+- Carregamento automático na inicialização
+- Fallback seguro para configurações JSON
+
+#### **🚫 Gitignore Inteligente**
+```gitignore
+# Arquivos sensíveis protegidos
+.env
+config/email_config.json
+build/
+dist/
+*.log
+```
+
+#### **📋 Estrutura de Configuração**
+```
+📁 Configurações
+├── 🔒 .env (credenciais - NÃO commitar)
+├── 📄 .env.example (template público)
+├── 🗂️ config/
+│   ├── 📋 email_config_template.json (template)
+│   └── ⚙️ windows_config.json (turnos)
+└── 🛡️ .gitignore (proteção automática)
+```
+
+#### **🔄 Migração Automática**
+- Detecção de configurações antigas
+- Migração segura para `.env`
+- Limpeza automática de credenciais em JSON
+- Backup de segurança automático
+
+### **⚠️ Importantes Avisos de Segurança**
+
+```bash
+# ❌ NUNCA faça isso:
+git add .env
+git add config/email_config.json
+
+# ✅ Sempre verifique antes de commit:
+git status --ignored
+```
+
 ## 🎨 Screenshots da Interface
 
 ```
@@ -245,4 +292,4 @@ Este projeto foi desenvolvido para otimização dos processos de expedição da 
 
 **Sistema de Relatórios Shopee v2.1.1** | Desenvolvido para excelência operacional
 
-### 🛡️ **Security First** - Suas credenciais estão protegidas! 
+### 🛡️ **Security First** - Suas credenciais estão protegidas!
