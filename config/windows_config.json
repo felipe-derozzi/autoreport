@@ -1,0 +1,17 @@
+{
+    "MANHA": {
+        "nome": "Manhã",
+        "inicio": "04:00",
+        "fim": "09:00"
+    },
+    "TARDE": {
+        "nome": "Tarde",
+        "inicio": "11:00",
+        "fim": "15:00"
+    },
+    "NOITE": {
+        "nome": "Noite",
+        "inicio": "18:00",
+        "fim": "21:00"
+    }
+}

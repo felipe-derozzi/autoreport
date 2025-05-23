@@ -1,0 +1,7 @@
+pandas
+openpyxl
+reportlab
+ttkbootstrap
+matplotlib
+secure-smtplib
+email-validator 

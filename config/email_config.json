@@ -1,0 +1,11 @@
+{
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "remetente_email": "felipe.derozzi@shopee.com",
+    "remetente_senha": "fdvs gpru phdk tdzf",
+    "destinatarios": [
+        "felipederozzi@gmail.com"
+    ],
+    "assunto_padrao": "[TESTE] Relatório de Expedição - Shopee - Mauá LSP64",
+    "corpo_mensagem": "Olá,\n\nSegue em anexo o relatório de expedição gerado automaticamente.\n\nDados do processamento:\n\n- Data/Hora: {data_hora}\n- Janela: {janela}\n\nAtenciosamente,\nSistema de Relatórios Shopee Mauá"
+}
