@@ -8,11 +8,16 @@ from email import encoders
 from email.mime.application import MIMEApplication
 import json
 from datetime import datetime
+from env_config import get_env_config
 
 class EmailManager:
     def __init__(self):
         self.config_dir = "config"
         self.email_config_file = os.path.join(self.config_dir, "email_config.json")
+        self.email_template_file = os.path.join(self.config_dir, "email_config_template.json")
+        self.env = get_env_config()
+        
+        # Configurações padrão agora vêm do template
         self.default_config = {
             "smtp_server": "smtp.gmail.com",
             "smtp_port": 587,
@@ -37,38 +42,105 @@ Sistema de Relatórios Shopee"""
         """Garante que o diretório e arquivo de configuração de email existam"""
         if not os.path.exists(self.config_dir):
             os.makedirs(self.config_dir)
-        if not os.path.exists(self.email_config_file):
+        
+        # Se não existe configuração e nem .env, criar template
+        if not os.path.exists(self.email_config_file) and not os.path.exists('.env'):
             self.save_email_config(self.default_config)
     
     def load_email_config(self):
-        """Carrega as configurações de email do arquivo"""
+        """Carrega as configurações de email (prioritiza .env sobre JSON)"""
         try:
-            if not os.path.exists(self.email_config_file):
-                self.ensure_config_exists()
-                return self.default_config
+            # Primeiro, tenta carregar do .env (mais seguro)
+            config = self._load_from_env()
             
-            with open(self.email_config_file, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                # Merge com configurações padrão para garantir que todas as chaves existam
-                merged_config = self.default_config.copy()
-                merged_config.update(config)
-                return merged_config
+            # Se .env não tem configurações completas, tenta JSON como fallback
+            if not self._is_config_complete(config):
+                json_config = self._load_from_json()
+                # Merge: .env sobrescreve JSON onde existir
+                for key, value in config.items():
+                    if value:  # Só sobrescreve se .env tem valor
+                        json_config[key] = value
+                config = json_config
+            
+            return config
+            
         except Exception as e:
             print(f"Erro ao carregar configurações de email: {str(e)}")
             return self.default_config
     
+    def _load_from_env(self):
+        """Carrega configurações das variáveis de ambiente"""
+        return {
+            "smtp_server": self.env.get("SMTP_SERVER", "smtp.gmail.com"),
+            "smtp_port": self.env.get_int("SMTP_PORT", 587),
+            "remetente_email": self.env.get("REMETENTE_EMAIL", ""),
+            "remetente_senha": self.env.get("REMETENTE_SENHA", ""),
+            "destinatarios": self.env.get_list("DESTINATARIOS"),
+            "assunto_padrao": self.env.get("ASSUNTO_PADRAO", "Relatório de Expedição - Shopee"),
+            "corpo_mensagem": self.env.get("CORPO_MENSAGEM", self.default_config["corpo_mensagem"])
+        }
+    
+    def _load_from_json(self):
+        """Carrega configurações do arquivo JSON (fallback)"""
+        if not os.path.exists(self.email_config_file):
+            return self.default_config.copy()
+        
+        with open(self.email_config_file, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            # Merge com configurações padrão para garantir que todas as chaves existam
+            merged_config = self.default_config.copy()
+            merged_config.update(config)
+            return merged_config
+    
+    def _is_config_complete(self, config):
+        """Verifica se a configuração está completa"""
+        required_fields = ["remetente_email", "remetente_senha"]
+        return all(config.get(field) for field in required_fields)
+    
     def save_email_config(self, config):
-        """Salva as configurações de email no arquivo"""
+        """Salva as configurações de email no arquivo JSON (para compatibilidade)"""
         try:
             if not os.path.exists(self.config_dir):
                 os.makedirs(self.config_dir)
+            
+            # Se temos credenciais, oferecer para criar .env
+            if config.get("remetente_email") and config.get("remetente_senha"):
+                self._offer_env_migration(config)
             
             with open(self.email_config_file, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=4, ensure_ascii=False)
             return True
         except Exception as e:
-            print(f"Erro ao salvar configurações de email: {str(e)}")
+            print(f"Erro ao salvar configurações de email: {e}")
             return False
+    
+    def _offer_env_migration(self, config):
+        """Oferece migração para arquivo .env se detectar credenciais no JSON"""
+        if os.path.exists('.env'):
+            return  # .env já existe
+        
+        try:
+            print("🔒 Detectadas credenciais no arquivo JSON.")
+            print("💡 Recomendo migrar para arquivo .env para maior segurança.")
+            
+            # Criar .env automaticamente se não existir
+            success = self.env.create_env_from_config(config)
+            if success:
+                print("✅ Arquivo .env criado! Suas credenciais agora estão mais seguras.")
+                print("⚠️  IMPORTANTE: Adicione o arquivo .env ao .gitignore!")
+                
+                # Limpar credenciais do JSON após migração
+                config_clean = config.copy()
+                config_clean["remetente_email"] = ""
+                config_clean["remetente_senha"] = ""
+                config_clean["destinatarios"] = []
+                
+                with open(self.email_config_file, 'w', encoding='utf-8') as f:
+                    json.dump(config_clean, f, indent=4, ensure_ascii=False)
+                print("🧹 Credenciais removidas do arquivo JSON por segurança.")
+                
+        except Exception as e:
+            print(f"⚠️ Erro na migração para .env: {e}")
     
     def validar_email(self, email):
         """Valida formato de email básico"""
@@ -234,4 +306,19 @@ Sistema de Relatórios Shopee"""
         if self.save_email_config(config):
             return True, "Configurações atualizadas com sucesso."
         else:
-            return False, "Erro ao salvar configurações." 
+            return False, "Erro ao salvar configurações."
+    
+    def get_config_source(self):
+        """Retorna a fonte das configurações atuais"""
+        env_config = self._load_from_env()
+        if self._is_config_complete(env_config):
+            return "Variáveis de Ambiente (.env)"
+        elif os.path.exists(self.email_config_file):
+            return "Arquivo JSON (config/email_config.json)"
+        else:
+            return "Configurações Padrão"
+    
+    def is_using_env(self):
+        """Verifica se está usando variáveis de ambiente"""
+        env_config = self._load_from_env()
+        return self._is_config_complete(env_config) 

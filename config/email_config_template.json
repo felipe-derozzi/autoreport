@@ -1,0 +1,9 @@
+{
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "remetente_email": "",
+    "remetente_senha": "",
+    "destinatarios": [],
+    "assunto_padrao": "Relatório de Expedição - Shopee",
+    "corpo_mensagem": "Olá,\n\nSegue em anexo o relatório de expedição gerado automaticamente.\n\nDados do processamento:\n\n- Data/Hora: {data_hora}\n- Janela: {janela}\n\nAtenciosamente,\nSistema de Relatórios Shopee"
+} 

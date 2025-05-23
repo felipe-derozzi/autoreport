@@ -1,0 +1,59 @@
+# ========================================
+# ARQUIVOS SENSÍVEIS - NÃO ENVIAR PARA GIT
+# ========================================
+
+# Arquivo de variáveis de ambiente (contém credenciais)
+.env
+
+# Configurações de email com credenciais reais
+config/email_config.json
+
+# ========================================
+# ARQUIVOS DE BUILD E CACHE
+# ========================================
+
+# PyInstaller
+*.manifest
+*.spec
+build/
+dist/
+*.egg-info/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# ========================================
+# OUTROS ARQUIVOS SENSÍVEIS
+# ========================================
+
+# Logs com possíveis informações sensíveis
+logs/
+*.log
+
+# Backups de configuração
+config/*.bak
+config/*.backup
+
+# Arquivos de teste com dados reais
+test_data/
+exemplos_dados_reais/ 
